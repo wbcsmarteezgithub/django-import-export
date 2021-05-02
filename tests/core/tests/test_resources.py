@@ -1264,6 +1264,62 @@ class ManyRelatedManagerDiffTest(TestCase):
                          expected_value)
 
 
+class ManyToManyWidgetDiffTest(TestCase):
+    fixtures = ["category", "book"]
+
+    def setUp(self):
+        pass
+
+    def test_many_to_many_widget_create(self):
+        # issue #1270 - ensure ManyToMany fields are correctly checked for
+        # changes when skip_unchanged=True
+        book = Book.objects.first()
+        book.categories.clear()
+        dataset_headers = ["id", "name", "categories"]
+        dataset_row = [book.id, book.name, "1"]
+        dataset = tablib.Dataset(headers=dataset_headers)
+        dataset.append(dataset_row)
+
+        book_resource = BookResource()
+        book_resource._meta.skip_unchanged = True
+
+        result = book_resource.import_data(dataset, dry_run=False)
+        self.assertEqual(result.rows[0].import_type,
+                         results.RowResult.IMPORT_TYPE_UPDATE)
+
+    def test_many_to_many_widget_update(self):
+        # issue #1270 - ensure ManyToMany fields are correctly checked for
+        # changes when skip_unchanged=True
+        book = Book.objects.first()
+        dataset_headers = ["id", "name", "categories"]
+        dataset_row = [book.id, book.name, "1"]
+        dataset = tablib.Dataset(headers=dataset_headers)
+        dataset.append(dataset_row)
+
+        book_resource = BookResource()
+        book_resource._meta.skip_unchanged = True
+
+        result = book_resource.import_data(dataset, dry_run=False)
+        self.assertEqual(result.rows[0].import_type,
+                         results.RowResult.IMPORT_TYPE_UPDATE)
+
+    def test_many_to_many_widget_no_changes(self):
+        # issue #1270 - ensure ManyToMany fields are correctly checked for
+        # changes when skip_unchanged=True
+        book = Book.objects.first()
+        dataset_headers = ["id", "name", "categories"]
+        dataset_row = [book.id, book.name, book.categories.all()]
+        dataset = tablib.Dataset(headers=dataset_headers)
+        dataset.append(dataset_row)
+
+        book_resource = BookResource()
+        book_resource._meta.skip_unchanged = True
+
+        result = book_resource.import_data(dataset, dry_run=False)
+        self.assertEqual(result.rows[0].import_type,
+                         results.RowResult.IMPORT_TYPE_SKIP)
+
+
 @mock.patch("import_export.resources.Diff", spec=True)
 class SkipDiffTest(TestCase):
     """

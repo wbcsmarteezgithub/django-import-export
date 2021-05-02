@@ -585,6 +585,7 @@ class Resource(metaclass=DeclarativeMetaclass):
                 # For fields that are models.fields.related.ManyRelatedManager
                 # we need to compare the results
                 if isinstance(field.widget, widgets.ManyToManyWidget):
+                    # compare with the future value to detect changes
                     instance_value = list(field.clean(row))
                 else:
                     instance_value = list(field.get_value(instance).all())
